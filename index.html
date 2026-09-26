@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Journal Intime & Horodateur - Vita et Aeterna</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/api.js" async defer></script>
+    <style>
+        :root {
+            --bg-color: #0f172a; --card-bg: #1e293b; --text-color: #f8fafc; --text-muted: #94a3b8;
+            --accent-color: #ef4444; --accent-hover: #dc2626; --border-color: #334155;
+            --input-bg: #090d16; --timeline-bg: #0f172a; --ai-box-bg: #111c30;
+            --success-color: #10b981; --drive-color: #1081e8; --warning-color: #f59e0b;
+        }
+
+        /* 12 Thèmes Visuels (Fond et Cartes synchronisés) */
+        body.theme-default { --bg-color: #0f172a; --card-bg: #1e293b; --border-color: #334155; --input-bg: #090d16; --timeline-bg: #0f172a; --ai-box-bg: #111c30; }
+        body.theme-oled { --bg-color: #000000; --card-bg: #121212; --border-color: #27272a; --input-bg: #050505; --timeline-bg: #000000; --ai-box-bg: #18181b; }
+        body.theme-blue { --bg-color: #0c192c; --card-bg: #162a45; --border-color: #243f63; --input-bg: #08111d; --timeline-bg: #0c192c; --ai-box-bg: #1c3354; }
+        body.theme-sepia { --bg-color: #1c1917; --card-bg: #292524; --border-color: #44403c; --input-bg: #0c0a09; --timeline-bg: #1c1917; --ai-box-bg: #322d2a; --text-color: #f5f5f4; --text-muted: #a8a29e; }
+        body.theme-light { --bg-color: #f8fafc; --card-bg: #ffffff; --border-color: #cbd5e1; --input-bg: #f1f5f9; --timeline-bg: #f8fafc; --ai-box-bg: #f3e8ff; --text-color: #0f172a; --text-muted: #64748b; }
+        body.theme-solar { --bg-color: #1c1408; --card-bg: #2d200c; --border-color: #573e16; --input-bg: #100b04; --timeline-bg: #1c1408; --ai-box-bg: #3b2a0f; --text-color: #fef3c7; --text-muted: #d97706; }
+        body.theme-forest { --bg-color: #062016; --card-bg: #0f3627; --border-color: #1b5e43; --input-bg: #03120c; --timeline-bg: #062016; --ai-box-bg: #144733; --text-color: #ecfdf5; --text-muted: #34d399; }
+        body.theme-ocean { --bg-color: #082136; --card-bg: #10375c; --border-color: #1d5f9c; --input-bg: #04121f; --timeline-bg: #082136; --ai-box-bg: #164b7d; --text-color: #f0f9ff; --text-muted: #38bdf8; }
+        body.theme-cyber { --bg-color: #05051a; --card-bg: #100f2e; --border-color: #3b28b5; --input-bg: #02020d; --timeline-bg: #05051a; --ai-box-bg: #1d184a; --text-color: #f3e8ff; --text-muted: #c084fc; }
+        body.theme-lavender { --bg-color: #1e1b2e; --card-bg: #2d2647; --border-color: #4c407a; --input-bg: #12101c; --timeline-bg: #1e1b2e; --ai-box-bg: #3c335e; --text-color: #f5f3ff; --text-muted: #a78bfa; }
+        body.theme-copper { --bg-color: #22120c; --card-bg: #382017; --border-color: #633829; --input-bg: #140a07; --timeline-bg: #22120c; --ai-box-bg: #4a2b1f; --text-color: #fff7ed; --text-muted: #fb923c; }
+        body.theme-midnight { --bg-color: #130826; --card-bg: #22133d; --border-color: #41266b; --input-bg: #0b0417; --timeline-bg: #130826; --ai-box-bg: #311c57; --text-color: #faf5ff; --text-muted: #e879f9; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+            -webkit-text-size-adjust: 100%;
+            transition: background 0.3s, color 0.3s;
+        }
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 900px;
+            margin: 0 auto 15px auto;
+            text-align: center;
+        }
+        h1 { margin: 0; font-size: 1.5rem; }
+        .subtitle { font-size: 0.85rem; color: var(--text-muted); font-style: italic; }
+        
+        .actions-bar {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        button, a.btn-link, label.btn-file {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 44px;
+            box-sizing: border-box;
+            transition: opacity 0.2s;
+        }
+        button:active { opacity: 0.8; }
+        button.danger { background-color: var(--accent-color); color: white; }
+        button.warning { background-color: var(--warning-color); color: #0f172a; }
+        button.ai-btn { background-color: #8b5cf6; color: white; }
+        button.history-btn { background-color: #06b6d4; color: white; }
+        button.drive-btn { background-color: var(--drive-color); color: white; }
+        button.success { background-color: var(--success-color); color: white; }
+        button.settings-btn { background-color: #475569; color: white; }
+        input[type="file"] { display: none; }
+
+        .home-dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            max-width: 900px;
+            margin: 0 auto 20px auto;
+        }
+        @media (max-width: 600px) {
+            .home-dashboard { grid-template-columns: 1fr; }
+        }
+        .dash-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .dash-card:active { transform: scale(0.98); }
+        .dash-icon { font-size: 2.2rem; margin-bottom: 8px; display: block; }
+        .dash-title { font-size: 1rem; font-weight: bold; margin-bottom: 6px; color: var(--text-color); }
+        .dash-desc { font-size: 0.75rem; color: var(--text-muted); line-height: 1.3; }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        .back-nav { max-width: 900px; margin: 0 auto 15px auto; }
+
+        .settings-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 0 auto 20px auto;
+            max-width: 900px;
+        }
+        .settings-card select {
+            padding: 10px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-color);
+            font-size: 1rem;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .form-card h2 { margin-top: 0; font-size: 1.1rem; color: var(--text-color); }
+        .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .form-row .form-group { flex: 1; min-width: 140px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 4px; font-size: 0.8rem; color: var(--text-muted); }
+        input[type="text"], input[type="date"], input[type="datetime-local"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-color);
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        textarea { resize: vertical; min-height: 160px; line-height: 1.4; }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        .profile-titles { display: flex; flex-direction: column; gap: 2px; }
+        .card-pseudo { font-size: 1.2rem; font-weight: bold; color: #f43f5e; font-style: italic; }
+        .card-realname { font-size: 0.85rem; color: var(--text-muted); }
+        
+        .badge {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .silence-meter {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .silence-info { display: flex; flex-direction: column; gap: 2px; }
+        .silence-title { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+        .silence-days { font-size: 1.1rem; font-weight: bold; color: var(--success-color); }
+        .silence-level {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .global-history-box {
+            background: rgba(6, 182, 212, 0.05);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        .global-history-title {
+            font-size: 0.8rem;
+            color: #22d3ee;
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .global-history-text {
+            font-size: 0.85rem;
+            color: var(--text-color);
+            white-space: pre-line;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .timeline-container {
+            border-left: 2px solid var(--border-color);
+            padding-left: 10px;
+            margin-bottom: 12px;
+        }
+        .timeline-item {
+            margin-bottom: 10px;
+            background: var(--timeline-bg);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        .timeline-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .timeline-date { font-size: 0.7rem; color: #38bdf8; font-weight: bold; }
+        .item-actions { display: flex; gap: 4px; }
+        .item-actions button { padding: 4px 8px; font-size: 0.7rem; min-height: 30px; }
+        .timeline-text { font-size: 0.85rem; color: var(--text-color); white-space: pre-line; }
+
+        .ai-exchange-container {
+            border-left: 2px solid #8b5cf6;
+            padding-left: 10px;
+            margin-top: 12px;
+        }
+        .ai-exchange-item {
+            margin-bottom: 10px;
+            background: var(--ai-box-bg);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #4c1d95;
+        }
+        .ai-exchange-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+            color: #c084fc;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .ai-exchange-text {
+            font-size: 0.85rem;
+            color: var(--text-color);
+            white-space: pre-line;
+        }
+
+        .card-footer {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+        }
+        .card-footer-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .card-footer button { padding: 8px 10px; font-size: 0.75rem; flex: 1; min-height: 38px; }
+    </style>
+</head>
+<body class="theme-default">
+
+<header>
+    <h1>Tableau de Bord & Journal Intime</h1>
+    <span class="subtitle">Mémoire persistant &bull; Vita et Æternam</span>
+    
+    <div class="actions-bar">
+        <button id="authButton" class="drive-btn" onclick="handleAuthClick()">🔐 Connexion Drive</button>
+        <button id="saveDriveBtn" class="success" onclick="saveToGoogleDrive()" style="display:none;">☁️ Sauvegarder Drive</button>
+        <button id="loadDriveBtn" class="warning" onclick="loadFromGoogleDrive()" style="display:none;">📂 Charger Drive</button>
+        <button onclick="exportDataPC()">💾 Sauver PC</button>
+        <label class="btn-file">
+            📂 Charger JSON <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+        </label>
+        <button class="settings-btn" onclick="switchView('settings')">⚙️ Paramètres</button>
+    </div>
+</header>
+
+<div class="container">
+
+    <!-- ACCUEIL -->
+    <div id="view-home" class="view-section active">
+        <div style="text-align:center; margin-bottom:20px;">
+            <h2 style="font-size:1.2rem; color:var(--text-color);">Tableau de bord principal</h2>
+        </div>
+        <div class="home-dashboard">
+            <div class="dash-card" onclick="switchView('list')">
+                <span class="dash-icon">📖</span>
+                <div class="dash-title">Liste des toxiques</div>
+                <div class="dash-desc">Profils, notes, horodateur de silence et journal intime.</div>
+            </div>
+            <div class="dash-card" onclick="switchView('election')">
+                <span class="dash-icon">👑</span>
+                <div class="dash-title">Plus grands toxiques</div>
+                <div class="dash-desc">Élection horodatée et export global du prompt comparatif vers Gemini.</div>
+            </div>
+            <div class="dash-card" onclick="switchView('forecast1')">
+                <span class="dash-icon">📊</span>
+                <div class="dash-title">Synthèse & Tendances</div>
+                <div class="dash-desc">Analyse des cycles et durées de rupture de contact.</div>
+            </div>
+            <div class="dash-card" onclick="switchView('forecast2')">
+                <span class="dash-icon">🛡️</span>
+                <div class="dash-title">Stratégie de Défense</div>
+                <div class="dash-desc">Simulation de posture et protection de l'horodateur.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VUE PARAMÈTRES (Thèmes & Explications Drive) -->
+    <div id="view-settings" class="view-section">
+        <div class="back-nav">
+            <button onclick="switchView('home')" style="background:#475569;">⬅️ Retour au Menu</button>
+        </div>
+
+        <div class="settings-card">
+            <h2 style="margin-top:0; font-size:1.2rem;">🎨 Personnalisation des Thèmes</h2>
+            <label for="themeSelector">Choisis ton ambiance visuelle (le fond et les cartes s'adaptent instantanément) :</label>
+            <select id="themeSelector" onchange="changeTheme(this.value)">
+                <option value="default">Nuit Bleutée (Défaut)</option>
+                <option value="oled">Noir Absolu (OLED)</option>
+                <option value="blue">Bleu Pro</option>
+                <option value="sepia">Sépia Grimoire</option>
+                <option value="light">Clair Épuré</option>
+                <option value="solar">☀️ Solaire Chaleureux</option>
+                <option value="forest">🌲 Forêt Profonde</option>
+                <option value="ocean">🌊 Océan Profond</option>
+                <option value="cyber">🤖 Cyberpunk Néon</option>
+                <option value="lavender">💜 Lavande Douce</option>
+                <option value="copper">🥉 Automne Cuivré</option>
+                <option value="midnight">🌌 Minuit Violet</option>
+            </select>
+        </div>
+
+        <div class="settings-card">
+            <h2 style="margin-top:0; font-size:1.2rem;">☁️ Comprendre et configurer la "Connexion Drive"</h2>
+            <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
+                <strong>Il n'y a pas d'adresse URL ou de dossier précis à écrire dans le logiciel.</strong> 
+                Voici comment fonctionne le système Google Drive :
+            </p>
+            <ul style="font-size:0.85rem; color:var(--text-muted); line-height:1.6; padding-left:20px;">
+                <li><strong>Où est sauvegardé le fichier ?</strong> L'application demande l'autorisation à Google de créer un fichier unique nommé <code>journal_intime_donnees.json</code> directement à la <em>racine</em> de ton Google Drive personnel.</li>
+                <li><strong>Pourquoi cela demande une configuration ?</strong> Pour des raisons de sécurité, Google exige qu'on lui déclare un identifiant d'application officiel (appelé <em>Client ID</em>).</li>
+                <li><strong>Comment l'obtenir en 2 minutes :</strong>
+                    <ol style="margin-top:4px;">
+                        <li>Rends-toi sur la <a href="https://console.cloud.google.com/" target="_blank" style="color:#38bdf8;">Google Cloud Console</a>.</li>
+                        <li>Crée un nouveau projet gratuit.</li>
+                        <li>Va dans <em>"API et services"</em> > <em>"Bibliothèque"</em> et active l'<strong>API Google Drive</strong>.</li>
+                        <li>Va dans <em>"Écran de consentement OAuth"</em> (configure-le en mode Externe/Interne rapidement), puis va dans <em>"Identifiants"</em> > <em>"Créer des identifiants"</em> > <strong>ID client OAuth</strong> (type : Application Web).</li>
+                        <li>Copie l'identifiant obtenu (qui ressemble à <code>123456789-abc...apps.googleusercontent.com</code>).</li>
+                    </ol>
+                </li>
+                <li><strong>Où le coller ?</strong> Tout en bas de ce fichier HTML, à la ligne du code JavaScript où il est écrit <code>const CLIENT_ID = 'VOTRE_CLIENT_ID_GOOGLE.apps.googleusercontent.com';</code>, remplace le texte par ton véritable ID client. Une fois fait, le bouton de connexion fonctionnera du premier coup sur ton PC et ton iPhone !</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- LISTE DES TOXIQUES -->
+    <div id="view-list" class="view-section">
+        <div class="back-nav">
+            <button onclick="switchView('home')" style="background:#475569;">⬅️ Retour au Menu</button>
+        </div>
+
+        <div class="form-card">
+            <h2 id="form-title">Créer un journal de profil</h2>
+            <input type="hidden" id="edit-id">
+            <input type="hidden" id="edit-sub-id">
+            <input type="hidden" id="form-mode" value="profile">
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firstname">Prénom</label>
+                    <input type="text" id="firstname" placeholder="Prénom">
+                </div>
+                <div class="form-group">
+                    <label for="lastname">Nom</label>
+                    <input type="text" id="lastname" placeholder="Nom">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="pseudo">Pseudonyme / Surnom (Ex : L'Ombre, Le Caméléon...)</label>
+                    <input type="text" id="pseudo" placeholder="Ex : L'Ombre">
+                </div>
+                <div class="form-group" id="category-group">
+                    <label for="category">Cercle</label>
+                    <select id="category">
+                        <option value="Professionnel">Professionnel</option>
+                        <option value="Entourage / Familial">Entourage / Familial</option>
+                        <option value="Autre">Autre</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="silence-start">Dernière interaction (Silence)</label>
+                <input type="datetime-local" id="silence-start">
+            </div>
+
+            <div class="form-group" id="global-history-group">
+                <label for="global-history">📜 Personnalité de Base / Historique Word (Coller le texte brut du fichier Word - Illimité)</label>
+                <textarea id="global-history" placeholder="Colle ici l'intégralité du texte ou du fichier Word brut (avec dates/horaires si présents)..."></textarea>
+                <button type="button" class="ai-btn" onclick="prepareWordAnalysisPrompt()" style="margin-top:8px; width:100%;">🧠 Générer le prompt d'analyse pour Gemini (Fichier Word)</button>
+            </div>
+
+            <div class="form-group" id="dynamic-date-group" style="display:none;">
+                <label for="obs-date">Date de l'événement</label>
+                <input type="date" id="obs-date">
+            </div>
+
+            <div class="form-group" id="details-container" style="display:none;">
+                <label for="details" id="details-label">Entrée du journal</label>
+                <textarea id="details" placeholder="Ressenti ou faits observés..."></textarea>
+            </div>
+
+            <button onclick="saveForm()" id="submit-btn" style="width:100%;">Enregistrer</button>
+            <button onclick="resetForm()" style="background:#475569; width:100%; margin-top:8px;" id="cancel-btn">Annuler</button>
+        </div>
+
+        <div id="entries-container"></div>
+    </div>
+
+    <!-- ELECTION -->
+    <div id="view-election" class="view-section">
+        <div class="back-nav">
+            <button onclick="switchView('home')" style="background:#475569;">⬅️ Retour au Menu</button>
+        </div>
+
+        <div class="form-card">
+            <h2>👑 Élection des "Plus Grands Toxiques"</h2>
+            <p style="color:var(--text-muted); font-size:0.85rem; line-height:1.4;">
+                Consigne la date et l'heure de l'élection. Le bouton ci-dessous compile <strong>l'intégralité des sauvegardes JSON</strong> de toutes les personnes pour m'envoyer un bloc massif et réaliser l'élection comparative.
+            </p>
+
+            <div class="form-row" style="margin-top:15px;">
+                <div class="form-group">
+                    <label for="election-date">Date & Heure de l'élection</label>
+                    <input type="datetime-local" id="election-date">
+                </div>
+                <div class="form-group">
+                    <label for="election-notes">Motivations / Contexte</label>
+                    <input type="text" id="election-notes" placeholder="Bilan des pires comportements...">
+                </div>
+            </div>
+
+            <button class="ai-btn" onclick="generateElectionPrompt()" style="width:100%; margin-top:10px;">👑 Envoyer tout à Gemini (Copier le prompt global d'élection)</button>
+        </div>
+
+        <div id="election-summary-card" class="card">
+            <h3>📋 Profils inclus dans l'élection globale :</h3>
+            <div id="election-profiles-list" style="margin-top:10px; font-size:0.85rem; color:var(--text-muted);"></div>
+        </div>
+    </div>
+
+    <!-- FORECAST 1 -->
+    <div id="view-forecast1" class="view-section">
+        <div class="back-nav"><button onclick="switchView('home')" style="background:#475569;">⬅️ Retour</button></div>
+        <div class="form-card">
+            <h2>📊 Synthèse & Tendances Globales</h2>
+            <p style="color:var(--text-muted); font-size:0.85rem;">Module en cours de développement pour analyser tes cycles de rupture.</p>
+        </div>
+    </div>
+
+    <!-- FORECAST 2 -->
+    <div id="view-forecast2" class="view-section">
+        <div class="back-nav"><button onclick="switchView('home')" style="background:#475569;">⬅️ Retour</button></div>
+        <div class="form-card">
+            <h2>🛡️ Stratégie de Défense</h2>
+            <p style="color:var(--text-muted); font-size:0.85rem;">Module de simulation de posture TCC face aux sollicitations.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function switchView(viewName) {
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById(`view-${viewName}`).classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if(viewName === 'election') renderElectionSummary();
+    }
+
+    const now = new Date();
+    const tzOffset = now.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(now - tzOffset)).toISOString().slice(0, 16);
+    document.getElementById('silence-start').value = localISOTime;
+    document.getElementById('election-date').value = localISOTime;
+
+    let entries = JSON.parse(localStorage.getItem('psych_book_entries_v14') || localStorage.getItem('psych_book_entries_v13') || localStorage.getItem('psych_book_entries_v12') || '[]');
+    let currentTheme = localStorage.getItem('journal_theme') || 'default';
+
+    document.body.className = `theme-${currentTheme}`;
+    document.getElementById('themeSelector').value = currentTheme;
+
+    function changeTheme(themeName) {
+        document.body.className = `theme-${themeName}`;
+        localStorage.setItem('journal_theme', themeName);
+    }
+
+    function getSilenceLevel(days) {
+        if (days >= 365) return "🏆 1 An et + (Paix Profonde)";
+        if (days >= 180) return "🌟 6 Mois";
+        if (days >= 90) return "🚀 3 Mois";
+        if (days >= 30) return "⭐ 1 Mois";
+        if (days >= 15) return "🛡️ 15 Jours";
+        if (days >= 7) return "⏳ 1 Semaine";
+        return "⚡ Moins d'une semaine";
+    }
+
+    function renderEntries() {
+        const container = document.getElementById('entries-container');
+        container.innerHTML = '';
+
+        if (entries.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Aucun journal enregistré.</p>';
+            return;
+        }
+
+        const currentTime = new Date();
+
+        entries.forEach(entry => {
+            if (entry.history) entry.history.sort((a, b) => new Date(b.date) - new Date(a.date));
+            if (entry.aiExchanges) entry.aiExchanges.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            let silenceDays = 0;
+            let silenceHours = 0;
+            if (entry.silenceStart) {
+                const startDate = new Date(entry.silenceStart);
+                const diffTime = currentTime - startDate;
+                if (diffTime > 0) {
+                    silenceDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    silenceHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                }
+            }
+            const silenceLevelText = getSilenceLevel(silenceDays);
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            const fullName = `${entry.firstname || ''} ${entry.lastname || ''}`.trim();
+            const displayName = entry.pseudo ? `"${entry.pseudo}"` : (fullName || 'Anonyme');
+
+            const silenceHtml = `
+                <div class="silence-meter">
+                    <div class="silence-info">
+                        <span class="silence-title">⏳ Horodateur de Silence</span>
+                        <span class="silence-days">${silenceDays}j ${silenceHours}h</span>
+                    </div>
+                    <div class="silence-level">${silenceLevelText}</div>
+                </div>
+            `;
+
+            let globalHistoryHtml = '';
+            if (entry.globalHistory && entry.globalHistory.trim() !== '') {
+                globalHistoryHtml = `
+                    <div class="global-history-box">
+                        <div class="global-history-title">
+                            <span>📜 Personnalité de Base / Historique Word</span>
+                            <button class="history-btn" style="padding:2px 6px; font-size:0.65rem;" onclick="switchView('list'); editProfile('${entry.id}')">Éditer</button>
+                        </div>
+                        <div class="global-history-text">${escapeHtml(entry.globalHistory)}</div>
+                    </div>
+                `;
+            }
+
+            let timelineHtml = '<span style="font-size:0.8rem; color:#38bdf8; font-weight:bold; display:block; margin-bottom:6px;">📌 Notes et faits</span>';
+            if (entry.history && entry.history.length > 0) {
+                entry.history.forEach(item => {
+                    timelineHtml += `
+                        <div class="timeline-item">
+                            <div class="timeline-header-row">
+                                <span class="timeline-date">📅 ${item.date}</span>
+                                <div class="item-actions">
+                                    <button class="warning" onclick="switchView('list'); editFact('${entry.id}', '${item.id}')">Mod.</button>
+                                    <button class="danger" onclick="deleteFact('${entry.id}', '${item.id}')">Sup.</button>
+                                </div>
+                            </div>
+                            <div class="timeline-text">${escapeHtml(item.text)}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                timelineHtml += '<p style="font-size:0.8rem; color:var(--text-muted);">Aucune note.</p>';
+            }
+
+            let aiHtml = '<span style="font-size:0.8rem; color:#c084fc; font-weight:bold; display:block; margin: 10px 0 6px 0;">🧠 Analyses IA & Retours</span>';
+            if (entry.aiExchanges && entry.aiExchanges.length > 0) {
+                entry.aiExchanges.forEach(ex => {
+                    aiHtml += `
+                        <div class="ai-exchange-item">
+                            <div class="ai-exchange-header">
+                                <span>💬 ${ex.date}</span>
+                                <div class="item-actions">
+                                    <button class="warning" onclick="switchView('list'); editAi('${entry.id}', '${ex.id}')">Mod.</button>
+                                    <button class="danger" onclick="deleteAi('${entry.id}', '${ex.id}')">Sup.</button>
+                                </div>
+                            </div>
+                            <div class="ai-exchange-text">${escapeHtml(ex.text)}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                aiHtml += '<p style="font-size:0.8rem; color:var(--text-muted);">Aucune analyse IA enregistrée.</p>';
+            }
+
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="profile-titles">
+                        <span class="card-pseudo">${escapeHtml(displayName)}</span>
+                        <span class="card-realname">${escapeHtml(fullName || 'Nom non renseigné')}</span>
+                    </div>
+                    <span class="badge">${escapeHtml(entry.category || 'Autre')}</span>
+                </div>
+                ${silenceHtml}
+                ${globalHistoryHtml}
+                <div class="timeline-container">${timelineHtml}</div>
+                <div class="ai-exchange-container">${aiHtml}</div>
+                
+                <div class="card-footer">
+                    <button class="ai-btn" onclick="prepareAiPrompt('${escapeHtml(entry.id)}')">🧠 Copier le prompt complet</button>
+                    <div class="card-footer-actions">
+                        <button class="history-btn" onclick="openAddGlobalHistory('${escapeHtml(entry.id)}')">📜 Word</button>
+                        <button class="warning" onclick="editProfile('${escapeHtml(entry.id)}')">Modifier</button>
+                        <button onclick="openAddFact('${escapeHtml(entry.id)}')" style="background:#334155;">+ Note</button>
+                        <button onclick="openAddAi('${escapeHtml(entry.id)}')" style="background:#6d28d9;">+ Analyse IA</button>
+                        <button class="danger" onclick="deleteEntry('${escapeHtml(entry.id)}')">Supprimer</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function renderElectionSummary() {
+        const listDiv = document.getElementById('election-profiles-list');
+        if (entries.length === 0) {
+            listDiv.innerHTML = "Aucun profil enregistré.";
+            return;
+        }
+        let html = '<ul style="margin:0; padding-left:15px;">';
+        entries.forEach(e => {
+            const name = e.pseudo ? `"${e.pseudo}"` : `${e.firstname || 'Anonyme'}`;
+            html += `<li><b>${escapeHtml(name)}</b> (${e.category}) - ${e.history ? e.history.length : 0} note(s)</li>`;
+        });
+        html += '</ul>';
+        listDiv.innerHTML = html;
+    }
+
+    function prepareWordAnalysisPrompt() {
+        const pseudo = document.getElementById('pseudo').value.trim() || "Inconnu";
+        const firstname = document.getElementById('firstname').value.trim();
+        const lastname = document.getElementById('lastname').value.trim();
+        const globalHistory = document.getElementById('global-history').value.trim();
+
+        if (!globalHistory) {
+            alert("Veuillez d'abord coller le texte de votre fichier Word dans le champ.");
+            return;
+        }
+
+        let promptText = `Agis en tant qu'expert psychologue clinicien et profileur comportemental. Voici l'historique brut extrait d'un fichier Word concernant le profil "${pseudo}" (${firstname} ${lastname}).\n\n`;
+        promptText += `Extrais de ce texte toutes les dates, horaires, faits saillants et propose une analyse psychologique structurée (traits de personnalité, mécanismes de manipulation, et points de vigilance).\n\n`;
+        promptText += `=== TEXTE BRUT DU FICHIER WORD ===\n${globalHistory}`;
+
+        navigator.clipboard.writeText(promptText).then(() => {
+            alert(`🧠 Le prompt d'analyse pour "${pseudo}" est copié ! Colle-le ici.`);
+        });
+    }
+
+    function generateElectionPrompt() {
+        if (entries.length === 0) { alert("Aucun profil."); return; }
+        const electionDate = document.getElementById('election-date').value;
+        const electionNotes = document.getElementById('election-notes').value.trim();
+
+        let promptText = `=== ÉLECTION DES PLUS GRANDS TOXIQUES (Date : ${electionDate}) ===\n`;
+        if (electionNotes) promptText += `Contexte : ${electionNotes}\n\n`;
+        promptText += `Voici l'intégralité des dossiers JSON de TOUS les profils pour analyse comparative d'expert :\n\n`;
+        promptText += JSON.stringify(entries, null, 2);
+
+        navigator.clipboard.writeText(promptText).then(() => {
+            alert(`👑 Dossier complet de l'élection copié dans le presse-papier ! Colle-le ici.`);
+        });
+    }
+
+    function saveForm() {
+        const mode = document.getElementById('form-mode').value;
+        const idField = document.getElementById('edit-id').value;
+        const subIdField = document.getElementById('edit-sub-id').value;
+        
+        const firstname = document.getElementById('firstname').value.trim();
+        const lastname = document.getElementById('lastname').value.trim();
+        const pseudo = document.getElementById('pseudo').value.trim();
+        const category = document.getElementById('category').value;
+        const silenceStart = document.getElementById('silence-start').value;
+        const globalHistory = document.getElementById('global-history').value.trim();
+        const obsDate = document.getElementById('obs-date').value;
+        const details = document.getElementById('details').value.trim();
+
+        if (mode === 'profile') {
+            if (!pseudo && !firstname) { alert('Veuillez renseigner un prénom ou un pseudonyme.'); return; }
+            if (idField) {
+                let entry = entries.find(e => e.id === idField);
+                if (entry) {
+                    entry.firstname = firstname; entry.lastname = lastname; entry.pseudo = pseudo;
+                    entry.category = category; if (silenceStart) entry.silenceStart = silenceStart;
+                    entry.globalHistory = globalHistory;
+                }
+            } else {
+                entries.push({
+                    id: Date.now().toString(), firstname, lastname, pseudo, category,
+                    silenceStart: silenceStart || new Date().toISOString(),
+                    globalHistory, history: [], aiExchanges: []
+                });
+            }
+        } else if (mode === 'globalHistory') {
+            let entry = entries.find(e => e.id === idField);
+            if (entry) entry.globalHistory = globalHistory;
+        } else if (mode === 'fact') {
+            if (!details || !obsDate) { alert('Renseignez la date et le texte.'); return; }
+            let entry = entries.find(e => e.id === idField);
+            if (entry) {
+                if (!entry.history) entry.history = [];
+                if (subIdField) {
+                    let f = entry.history.find(item => item.id === subIdField);
+                    if (f) { f.date = obsDate; f.text = details; }
+                } else {
+                    entry.history.push({ id: Date.now().toString(), date: obsDate, text: details });
+                }
+            }
+        } else if (mode === 'ai') {
+            if (!details || !obsDate) { alert('Renseignez la date et le texte.'); return; }
+            let entry = entries.find(e => e.id === idField);
+            if (entry) {
+                if (!entry.aiExchanges) entry.aiExchanges = [];
+                if (subIdField) {
+                    let a = entry.aiExchanges.find(item => item.id === subIdField);
+                    if (a) { a.date = obsDate; a.text = details; }
+                } else {
+                    entry.aiExchanges.push({ id: Date.now().toString(), date: obsDate, text: details });
+                }
+            }
+        }
+
+        persistAndRefresh();
+        resetForm();
+        switchView('list');
+    }
+
+    function editProfile(id) {
+        const entry = entries.find(e => e.id === id);
+        if (!entry) return;
+        document.getElementById('edit-id').value = entry.id;
+        document.getElementById('edit-sub-id').value = '';
+        document.getElementById('form-mode').value = 'profile';
+        document.getElementById('firstname').value = entry.firstname || '';
+        document.getElementById('lastname').value = entry.lastname || '';
+        document.getElementById('pseudo').value = entry.pseudo || '';
+        document.getElementById('category').value = entry.category || 'Professionnel';
+        document.getElementById('silence-start').value = entry.silenceStart || localISOTime;
+        document.getElementById('global-history').value = entry.globalHistory || '';
+        
+        document.getElementById('global-history-group').style.display = 'block';
+        document.getElementById('dynamic-date-group').style.display = 'none';
+        document.getElementById('details-container').style.display = 'none';
+        document.getElementById('form-title').innerText = `Modifier le profil`;
+        document.getElementById('submit-btn').innerText = "Mettre à jour";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openAddGlobalHistory(id) {
+        switchView('list');
+        const entry = entries.find(e => e.id === id);
+        if (!entry) return;
+        document.getElementById('edit-id').value = entry.id;
+        document.getElementById('form-mode').value = 'globalHistory';
+        document.getElementById('global-history').value = entry.globalHistory || '';
+        
+        document.getElementById('global-history-group').style.display = 'block';
+        document.getElementById('dynamic-date-group').style.display = 'none';
+        document.getElementById('details-container').style.display = 'none';
+        document.getElementById('form-title').innerText = `📜 Mettre à jour l'historique Word`;
+        document.getElementById('submit-btn').innerText = "Enregistrer l'historique";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openAddFact(id) {
+        switchView('list');
+        const entry = entries.find(e => e.id === id);
+        if (!entry) return;
+        document.getElementById('edit-id').value = entry.id;
+        document.getElementById('edit-sub-id').value = '';
+        document.getElementById('form-mode').value = 'fact';
+
+        document.getElementById('global-history-group').style.display = 'none';
+        document.getElementById('dynamic-date-group').style.display = 'block';
+        document.getElementById('details-container').style.display = 'block';
+        document.getElementById('obs-date').valueAsDate = new Date();
+        document.getElementById('details').value = '';
+        document.getElementById('details-label').innerText = "Nouvelle note";
+        document.getElementById('form-title').innerText = `Ajouter une note`;
+        document.getElementById('submit-btn').innerText = "Ajouter";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function editFact(entryId, factId) {
+        const entry = entries.find(e => e.id === entryId);
+        if (!entry) return;
+        const fact = entry.history.find(f => f.id === factId);
+        if (!fact) return;
+
+        document.getElementById('edit-id').value = entry.id;
+        document.getElementById('edit-sub-id').value = fact.id;
+        document.getElementById('form-mode').value = 'fact';
+
+        document.getElementById('global-history-group').style.display = 'none';
+        document.getElementById('dynamic-date-group').style.display = 'block';
+        document.getElementById('details-container').style.display = 'block';
+        document.getElementById('obs-date').value = fact.date;
+        document.getElementById('details').value = fact.text;
+        document.getElementById('form-title').innerText = `Modifier la note`;
+        document.getElementById('submit-btn').innerText = "Enregistrer";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openAddAi(id) {
+        switchView('list');
+        const entry = entries.find(e => e.id === id);
+        if (!entry) return;
+        document.getElementById('edit-id').value = entry.id;
+        document.getElementById('edit-sub-id').value = '';
+        document.getElementById('form-mode').value = 'ai';
+
+        document.getElementById('global-history-group').style.display = 'none';
+        document.getElementById('dynamic-date-group').style.display = 'block';
+        document.getElementById('details-container').style.display = 'block';
+        document.getElementById('obs-date').valueAsDate = new Date();
+        document.getElementById('details').value = '';
+        document.getElementById('details-label').innerText = "Colle ici l'analyse ou la réponse de Gemini";
+        document.getElementById('form-title').innerText = `Ajouter une analyse IA`;
+        document.getElementById('submit-btn').innerText = "Enregistrer";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function editAi(entryId, aiId) {
+        const entry = entries.find(e => e.id === entryId);
+        if (!entry) return;
+        const ai = entry.aiExchanges.find(a => a.id === aiId);
+        if (!ai) return;
+
+        document.getElementById('edit-id').value = entry.id;
+        document.getElementById('edit-sub-id').value = ai.id;
+        document.getElementById('form-mode').value = 'ai';
+
+        document.getElementById('global-history-group').style.display = 'none';
+        document.getElementById('dynamic-date-group').style.display = 'block';
+        document.getElementById('details-container').style.display = 'block';
+        document.getElementById('obs-date').value = ai.date;
+        document.getElementById('details').value = ai.text;
+        document.getElementById('form-title').innerText = `Modifier l'analyse IA`;
+        document.getElementById('submit-btn').innerText = "Enregistrer";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteFact(entryId, factId) {
+        if (confirm('Supprimer cette note ?')) {
+            let entry = entries.find(e => e.id === entryId);
+            if (entry) { entry.history = entry.history.filter(f => f.id !== factId); persistAndRefresh(); }
+        }
+    }
+
+    function deleteAi(entryId, aiId) {
+        if (confirm('Supprimer cette analyse ?')) {
+            let entry = entries.find(e => e.id === entryId);
+            if (entry) { entry.aiExchanges = entry.aiExchanges.filter(a => a.id !== aiId); persistAndRefresh(); }
+        }
+    }
+
+    function deleteEntry(id) {
+        if (confirm('Supprimer ce profil complet ?')) {
+            entries = entries.filter(e => e.id !== id);
+            persistAndRefresh();
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('edit-id').value = '';
+        document.getElementById('edit-sub-id').value = '';
+        document.getElementById('form-mode').value = 'profile';
+        document.getElementById('firstname').value = '';
+        document.getElementById('lastname').value = '';
+        document.getElementById('pseudo').value = '';
+        document.getElementById('global-history').value = '';
+        document.getElementById('details').value = '';
+        document.getElementById('global-history-group').style.display = 'block';
+        document.getElementById('dynamic-date-group').style.display = 'none';
+        document.getElementById('details-container').style.display = 'none';
+        document.getElementById('form-title').innerText = "Créer un journal de profil";
+        document.getElementById('submit-btn').innerText = "Enregistrer";
+    }
+
+    function prepareAiPrompt(id) {
+        const entry = entries.find(e => e.id === id);
+        if (!entry) return;
+        const fullName = `${entry.firstname || ''} ${entry.lastname || ''}`.trim();
+        let exportText = `Dossier complet (${entry.pseudo || fullName}) :\n\n`;
+        exportText += `=== PERSONNALITÉ DE BASE / HISTORIQUE WORD ===\n${entry.globalHistory || 'Aucun'}\n\n`;
+        exportText += `=== NOTES ET FAITS ===\n` + (entry.history || []).map(h => `- [${h.date}] : ${h.text}`).join('\n') + `\n\n`;
+        exportText += `=== ANALYSES IA PRÉCÉDENTES ===\n` + (entry.aiExchanges || []).map(ex => `[${ex.date}] : ${ex.text}`).join('\n---\n');
+
+        navigator.clipboard.writeText(exportText).then(() => {
+            alert(`Dossier complet de "${entry.pseudo || fullName}" copié dans le presse-papier ! Colle-le ici.`);
+        });
+    }
+
+    function persistAndRefresh() {
+        localStorage.setItem('psych_book_entries_v14', JSON.stringify(entries));
+        renderEntries();
+    }
+
+    // API GOOGLE DRIVE
+    const CLIENT_ID = 'VOTRE_CLIENT_ID_GOOGLE.apps.googleusercontent.com'; 
+    const API_KEY = 'VOTRE_API_KEY';
+    const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
+    const SCOPES = "https://www.googleapis.com/auth/drive.file";
+
+    let tokenClient, gapiInited = false, gisInited = false, accessToken = null;
+
+    function gapiLoaded() { gapi.load('client', () => { gapi.client.init({ apiKey: API_KEY, discoveryDocs: DISCOVERY_DOCS }); gapiInited = true; }); }
+    function gisLoaded() {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID, scope: SCOPES,
+            callback: (resp) => {
+                if (resp.error !== undefined) throw (resp);
+                accessToken = resp.access_token;
+                document.getElementById('authButton').innerText = "✅ Connecté";
+                document.getElementById('authButton').style.background = "#10b981";
+                document.getElementById('saveDriveBtn').style.display = "inline-flex";
+                document.getElementById('loadDriveBtn').style.display = "inline-flex";
+            }
+        });
+        gisInited = true;
+    }
+    function handleAuthClick() { tokenClient.requestAccessToken({ prompt: 'consent' }); }
+
+    async function saveToGoogleDrive() {
+        if (!accessToken) { alert("Connecte-toi d'abord."); return; }
+        const fileContent = JSON.stringify(entries, null, 2);
+        const fileName = 'journal_intime_donnees.json';
+        try {
+            const res = await gapi.client.drive.files.list({ q: `name = '${fileName}' and trashed = false`, fields: "files(id, name)" });
+            const files = res.result.files;
+            if (files.length > 0) {
+                await gapi.client.request({ path: `/upload/drive/v3/files/${files[0].id}`, method: 'PATCH', params: { uploadType: 'media' }, body: fileContent });
+                alert("✨ Fichier mis à jour dans ton Google Drive !");
+            } else {
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify({ name: fileName, mimeType: 'application/json' })], { type: 'application/json' }));
+                form.append('file', new Blob([fileContent], { type: 'application/json' }));
+                await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }), body: form });
+                alert("✨ Nouveau fichier créé dans ton Google Drive !");
+            }
+        } catch (err) { alert("Erreur Drive : " + err.message); }
+    }
+
+    async function loadFromGoogleDrive() {
+        if (!accessToken) { alert("Connecte-toi d'abord."); return; }
+        try {
+            const res = await gapi.client.drive.files.list({ q: "name = 'journal_intime_donnees.json' and trashed = false", fields: "files(id, name)" });
+            if (res.result.files.length === 0) { alert("Fichier introuvable sur le Drive."); return; }
+            const fileRes = await gapi.client.drive.files.get({ fileId: res.result.files[0].id, alt: 'media' });
+            if (fileRes.body) { entries = JSON.parse(fileRes.body); persistAndRefresh(); alert("📂 Données chargées depuis ton Google Drive !"); }
+        } catch (err) { alert("Erreur chargement : " + err.message); }
+    }
+
+    function exportDataPC() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(entries, null, 2));
+        const anchor = document.createElement('a'); anchor.setAttribute("href", dataStr); anchor.setAttribute("download", "journal_intime_donnees.json");
+        document.body.appendChild(anchor); anchor.click(); anchor.remove();
+    }
+
+    function importData(event) {
+        const reader = new FileReader();
+        if (event.target.files[0]) {
+            reader.readAsText(event.target.files[0], "UTF-8");
+            reader.onload = (e) => {
+                try { entries = JSON.parse(e.target.result); persistAndRefresh(); alert("Import réussi !"); }
+                catch(err) { alert("Erreur JSON."); }
+            }
+        }
+    }
+
+    function escapeHtml(text) {
+        return text ? text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : '';
+    }
+
+    renderEntries();
+</script>
+<script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
+<script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
+
+</body>
+</html>
